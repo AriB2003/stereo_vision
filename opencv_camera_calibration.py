@@ -31,6 +31,8 @@ if ret == True:
     corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
     imgpoints.append(corners2)
 
+    print(imgpoints)
+    print(objpoints)
     ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(
         objpoints, imgpoints, gray.shape[::-1], None, None
     )
