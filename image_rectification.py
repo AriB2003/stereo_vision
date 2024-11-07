@@ -1,6 +1,8 @@
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
+from skimage.io import imread, imshow
+from skimage import transform
 
 left_image = Image.open('im0.png').convert('L')
 right_image = Image.open('im1.png').convert('L')
@@ -22,9 +24,9 @@ P2 = np.dot(K2, np.hstack((R, T.reshape(3, 1))))  # right
 
 def warp_image(img, H):
     #applies a homography H to image
-    h, w = img.shape
+    h, w = img.reshape
     y_idx, x_idx = np.indices((h, w))
-    homogenous_coords = np.stack((x_idx.ravel(), y_idx.ravel(), np.ones_like(x_idx.ravel())))
+    homogenous_coords = np.stack((x_idx.ravel_multi_index(), y_idx.ravel(), np.ones_like(x_idx.ravel())))
     warped_coords = H @ homogenous_coords
     warped_coords /= warped_coords[2, :]
     x_warped, y_warped = warped_coords[0, :].reshape(h, w), warped_coords[1, :].reshape(h, w)
@@ -37,7 +39,7 @@ def warp_image(img, H):
 H1 = np.linalg.inv(K1) @ P1[:, :3]
 H2 = np.linalg.inv(K2) @ P2[:, :3]
 
-# applying rectification homographies to both images
+# apply rectification homographies to both images
 rectified_left = warp_image(left_image_np, H1)
 rectified_right = warp_image(right_image_np, H2)
 
