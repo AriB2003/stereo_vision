@@ -107,20 +107,39 @@ print("Final Right Intrinsic Matrix")
 print(right_intrinsic_matrix)
 
 indices = (0, 5, 10, 15, 20, 24, 29, 34)
+
+# corners_left[:, 0, 0] = (
+#     corners_left[:, 0, 0] - left_intrinsic_matrix[0, 2]
+# ) / left_intrinsic_matrix[0, 0]
+# corners_left[:, 0, 1] = (
+#     corners_left[:, 0, 1] - left_intrinsic_matrix[1, 2]
+# ) / left_intrinsic_matrix[1, 1]
+# corners_right[:, 0, 0] = (
+#     corners_right[:, 0, 0] - right_intrinsic_matrix[0, 2]
+# ) / right_intrinsic_matrix[0, 0]
+# corners_right[:, 0, 1] = (
+#     corners_right[:, 0, 1] - right_intrinsic_matrix[1, 2]
+# ) / right_intrinsic_matrix[1, 1]
+# print(corners_left)
+
 fundamental_matrix = eight_point(corners_left[indices, :], corners_right[indices, :])
 essential_matrix = left_intrinsic_matrix.T @ fundamental_matrix @ left_intrinsic_matrix
 
+corners_left = cv.undistortPoints(corners_left, left_intrinsic_matrix, None)
+corners_right = cv.undistortPoints(corners_right, right_intrinsic_matrix, None)
+# print(corners_left)
+# print(corners_right)
+
+essential_opencv, _ = cv.findEssentialMat(
+    corners_left[indices, :],
+    corners_right[indices, :],
+    cameraMatrix=left_intrinsic_matrix,
+)
+
 print("Essential Matrix")
 print(essential_matrix)
-
-# essential_opencv, _ = cv.findEssentialMat(
-#     corners_left[indices, :],
-#     corners_right[indices, :],
-#     cameraMatrix=left_intrinsic_matrix,
-#     method=cv.RANSAC,
-#     threshold=1,
-# )
-# print(essential_opencv)
+print("OpenCV Essential Matrix")
+print(essential_opencv)
 ret, r, t, _ = cv.recoverPose(
     essential_matrix,
     corners_left[indices, :],
