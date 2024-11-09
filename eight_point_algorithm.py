@@ -8,7 +8,7 @@ CHESSBOARD_HEIGHT = 5
 CRITERIA = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 
-def eight_point(cl, cr):
+def eight_point(cl, cr, debug=True):
     if len(cl) < 8 or len(cr) < 8:
         print("Not enough matched corners")
         raise NotImplementedError
@@ -31,16 +31,17 @@ def eight_point(cl, cr):
     fundamental, _, _, _ = np.linalg.lstsq(eight_matrix, minusone, rcond=None)
     fundamental = np.append(fundamental, 1)
     fundamental = np.reshape(fundamental, (3, 3)).T
-    print("Custom Fundamental Matrix")
-    print(fundamental)
-    print("OpenCV Fundamental Matrix")
-    print(fundamental_opencv)
+    if debug:
+        print("Custom Fundamental Matrix")
+        print(fundamental)
+        print("OpenCV Fundamental Matrix")
+        print(fundamental_opencv)
     # for i in range(8):
     #     print(f"{cl[i]@fundamental@cr[i].T},{cl[i]@fundamental_opencv@cr[i].T}")
     return fundamental
 
 
-def intrinsic_matrices(ret, gray, corners, tit):
+def intrinsic_matrices(ret, gray, corners, tit, debug=True):
     if ret == True:
         refined_corners = cv.cornerSubPix(
             gray,
@@ -54,15 +55,16 @@ def intrinsic_matrices(ret, gray, corners, tit):
         _, mtx, _, _, _ = cv.calibrateCamera(
             [objp], [refined_corners], gray.shape[::-1], None, None
         )
-        print(f"{tit.title()} Intrinsic Matrix")
-        print(mtx)
+        if debug:
+            print(f"{tit.title()} Intrinsic Matrix")
+            print(mtx)
         return mtx
     else:
         print(f"Did not detect chessboard in {tit} image.")
         raise NotImplementedError
 
 
-def run_camera_calibration():
+def run_camera_calibration(debug=True):
     left_intrinsic_matrix = np.zeros((3, 3))
     right_intrinsic_matrix = np.zeros((3, 3))
     corners_left = None
@@ -71,7 +73,8 @@ def run_camera_calibration():
     right_counter = 0
 
     for filename in glob.glob("zed_calibration/*"):
-        print(filename)
+        if debug:
+            print(filename)
         chessboard = cv.imread(filename)
         chessboard_small = cv.resize(chessboard, (0, 0), fx=0.5, fy=0.5)
 
@@ -85,7 +88,7 @@ def run_camera_calibration():
                 chessboard_right, (CHESSBOARD_WIDTH, CHESSBOARD_HEIGHT), None
             )
             right_intrinsic_matrix += intrinsic_matrices(
-                ret_right, gray_right, corners_right, "right"
+                ret_right, gray_right, corners_right, "right", debug=debug
             )
             right_counter += 1
         if not "r" in filename.split("\\")[-1]:
@@ -98,17 +101,18 @@ def run_camera_calibration():
                 chessboard_left, (CHESSBOARD_WIDTH, CHESSBOARD_HEIGHT), None
             )
             left_intrinsic_matrix += intrinsic_matrices(
-                ret_left, gray_left, corners_left, "left"
+                ret_left, gray_left, corners_left, "left", debug=debug
             )
             left_counter += 1
 
     left_intrinsic_matrix /= left_counter
     right_intrinsic_matrix /= right_counter
 
-    print("Final Left Intrinsic Matrix")
-    print(left_intrinsic_matrix)
-    print("Final Right Intrinsic Matrix")
-    print(right_intrinsic_matrix)
+    if debug:
+        print("Final Left Intrinsic Matrix")
+        print(left_intrinsic_matrix)
+        print("Final Right Intrinsic Matrix")
+        print(right_intrinsic_matrix)
 
     indices = (0, 5, 10, 15, 20, 24, 29, 34)
 
@@ -127,7 +131,7 @@ def run_camera_calibration():
     # print(corners_left)
 
     fundamental_matrix = eight_point(
-        corners_left[indices, :], corners_right[indices, :]
+        corners_left[indices, :], corners_right[indices, :], debug=debug
     )
     essential_matrix = (
         left_intrinsic_matrix.T @ fundamental_matrix @ left_intrinsic_matrix
@@ -144,20 +148,22 @@ def run_camera_calibration():
         cameraMatrix=left_intrinsic_matrix,
     )
 
-    print("Essential Matrix")
-    print(essential_matrix)
-    print("OpenCV Essential Matrix")
-    print(essential_opencv)
+    if debug:
+        print("Essential Matrix")
+        print(essential_matrix)
+        print("OpenCV Essential Matrix")
+        print(essential_opencv)
     ret, r, t, _ = cv.recoverPose(
         essential_matrix,
         corners_left[indices, :],
         corners_right[indices, :],
         cameraMatrix=(left_intrinsic_matrix + right_intrinsic_matrix) / 2,
     )
-    print("Rotation")
-    print(r)
-    print("Translation")
-    print(t)
+    if debug:
+        print("Rotation")
+        print(r)
+        print("Translation")
+        print(t)
     return (
         left_intrinsic_matrix,
         right_intrinsic_matrix,
