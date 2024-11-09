@@ -8,6 +8,9 @@ from eight_point_algorithm import run_camera_calibration
 left_image = Image.open("im0.png").convert("L")
 right_image = Image.open("im1.png").convert("L")
 
+left_image = np.array(left_image)
+right_image = np.array(right_image)
+
 
 def decompose_essential_matrix(E):
     U, _, Vt = svd(E)
@@ -24,6 +27,18 @@ def decompose_essential_matrix(E):
     if np.linalg.det(R2) < 0:
         R2 = -R2
 
+    t = np.array([12 / 100, 0, 0])  # translation vector
+    # R1 = np.eye(3)  # no rotation
+    # R1[0, 0] = 0.85
+    # R2 = np.eye(3)  # no rotation
+    R1[2, :] = 0
+    R1[:, 2] = 0
+    R1[2, 2] = -1
+    R2[2, :] = 0
+    R2[:, 2] = 0
+    R2[2, 2] = 1
+    print(R1)
+    print(R2)
     return R1, R2, t
 
 
@@ -62,15 +77,15 @@ def apply_homography(img, H):
     transformed_coords = H @ coords_hom
     transformed_coords /= transformed_coords[2, :]  # Normalize by the third row
     transformed_coords = transformed_coords[:2].round().astype(int)
-
+    print(transformed_coords)
     # Create an empty canvas for the warped image
     warped_img = np.zeros_like(img)
-    y_valid = (0 <= transformed_coords[0]) & (transformed_coords[0] < w)
-    x_valid = (0 <= transformed_coords[1]) & (transformed_coords[1] < h)
+    y_valid = (0 <= transformed_coords[0]) & (transformed_coords[0] < h)
+    x_valid = (0 <= transformed_coords[1]) & (transformed_coords[1] < w)
     valid = y_valid & x_valid
 
-    warped_img[coords[0, valid], coords[1, valid]] = img[
-        transformed_coords[1, valid], transformed_coords[0, valid]
+    warped_img[transformed_coords[0, valid], transformed_coords[1, valid]] = img[
+        coords[0, valid], coords[1, valid]
     ]
     return warped_img
 
