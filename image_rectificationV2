@@ -10,16 +10,15 @@ left_image = Image.open('im0.png').convert('L')
 right_image = Image.open('im1.png').convert('L')
 
 def decompose_essential_matrix(E):
-    # Perform SVD on the essential matrix
     U, _, Vt = svd(E)
     
-    # Ensure a proper rotation matrix with det = 1
+    # rotation matrix with det = 1
     W = np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
     R1 = U @ W @ Vt
     R2 = U @ W.T @ Vt
     t = U[:, 2]
     
-    # Correct rotations if necessary
+    # Correct rotations 
     if np.linalg.det(R1) < 0:
         R1 = -R1
     if np.linalg.det(R2) < 0:
@@ -32,7 +31,7 @@ def compute_rectification_homographies(R1, R2, t, K):
     c1 = np.zeros(3)
     c2 = t
 
-    # Define new coordinate axes for rectification
+    # Coordinate axes for rectification
     r1 = (c2 - c1) / np.linalg.norm(c2 - c1)
     r2 = np.cross([0, 0, 1], r1)
     r2 /= np.linalg.norm(r2)
