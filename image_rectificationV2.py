@@ -1,10 +1,8 @@
 from PIL import Image
 import numpy as np
 from scipy.linalg import svd
-from skimage.transform import warp
 import matplotlib.pyplot as plt
 from skimage.io import imread, imshow
-from skimage import img_as_ubyte
 from eight_point_algorithm import run_camera_calibration
 
 
