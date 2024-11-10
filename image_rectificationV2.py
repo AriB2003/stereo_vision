@@ -22,7 +22,7 @@ def decompose_essential_matrix(E, shape, debug=True):
         R2 = -R2
 
     # print(t)
-    # t = np.array([12 / 10, 0, 0])  # translation vector
+    # t = np.array([100, 1, 1])  # translation vector
     # print(shape)
     # t[0] /= shape[0]
     # t[1] /= shape[1]
@@ -64,7 +64,7 @@ def compute_rectification_homographies(R1, R2, t, K1, K2, debug=True):
     return H1, H2
 
 
-def apply_homography(img, H):
+def apply_homography(img, H, debug=True):
     # Warp image with homography matrix H
     # This uses a meshgrid and affine mapping for each pixel
 
@@ -78,7 +78,8 @@ def apply_homography(img, H):
     transformed_coords = H @ coords_hom
     transformed_coords /= transformed_coords[2, :]  # Normalize by the third row
     transformed_coords = transformed_coords[:2].round().astype(int)
-    # print(transformed_coords)
+    if debug:
+        print(transformed_coords)
     # Create an empty canvas for the warped image
     warped_img = np.zeros_like(img)
     x_valid = (0 <= transformed_coords[0, :]) & (transformed_coords[0, :] < w)
@@ -102,8 +103,8 @@ def run_rectification(left_image, right_image, debug=True):
     H1, H2 = compute_rectification_homographies(R1, R2, t, K1, K2, debug=debug)
 
     # Step 3: Rectify both images by applying the homographies
-    left_image_rectified = apply_homography(left_image, H1)
-    right_image_rectified = apply_homography(right_image, H2)
+    left_image_rectified = apply_homography(left_image, H1, debug=debug)
+    right_image_rectified = apply_homography(right_image, H2, debug=debug)
 
     if debug:
         # display
@@ -132,4 +133,4 @@ def run_rectification(left_image, right_image, debug=True):
 # left_image = np.array(left_image)
 # right_image = np.array(right_image)
 
-# run_rectification(left_image, right_image, debug=False)
+# run_rectification(left_image, right_image, debug=True)
