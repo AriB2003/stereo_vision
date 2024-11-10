@@ -212,6 +212,7 @@ def plot_depth_map_2D(depth_map_2D):
     
     # # Cut off the left end of the depth map
     # processed_2D_depth = depth_map_2D[:,22:]
+    processed_2D_depth = copy.deepcopy(depth_map_2D)
 
     # Process depth map for good visualization
     # threshold = 500
