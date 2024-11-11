@@ -127,8 +127,9 @@ def run_rectification(left_image, right_image, debug=True):
     return left_image_rectified, right_image_rectified
 
 
-# left_image = Image.open("testleft.jpg").convert("L")
-# right_image = Image.open("testright.jpg").convert("L")
+# identifier = "classroom"
+# left_image = Image.open(identifier + "left.jpg").convert("L")
+# right_image = Image.open(identifier + "right.jpg").convert("L")
 
 # left_image = np.array(left_image)
 # right_image = np.array(right_image)

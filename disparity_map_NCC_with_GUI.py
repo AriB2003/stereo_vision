@@ -8,8 +8,9 @@ matplotlib.use("TKAgg")
 from image_rectificationV2 import run_rectification
 
 # Import images into CV
-img_left = cv.imread("testleft.jpg")
-img_right = cv.imread("testright.jpg")
+identifier = "classroom"
+img_left = cv.imread(identifier + "left.jpg")
+img_right = cv.imread(identifier + "right.jpg")
 img_left = cv.resize(img_left, (0, 0), fx=0.25, fy=0.25)
 img_right = cv.resize(img_right, (0, 0), fx=0.25, fy=0.25)
 
@@ -17,6 +18,11 @@ img_right = cv.resize(img_right, (0, 0), fx=0.25, fy=0.25)
 img_left_rect, img_right_rect = run_rectification(img_left, img_right, debug=False)
 img_left_gray = cv.cvtColor(img_left_rect, cv.COLOR_RGB2GRAY)
 img_right_gray = cv.cvtColor(img_right_rect, cv.COLOR_RGB2GRAY)
+
+
+# Helper Function
+def calculate_SSD(matrix1, matrix2):  # use argmin for finding best fit
+    return np.sum((matrix1 - matrix2) ** 2, axis=(-2, -1))
 
 
 # Helper Function
@@ -86,16 +92,61 @@ for y in range(frame_thickness, img_height - frame_thickness):
             ]
         )
 
+# Edge Filtering
+t1 = 10
+t2 = 200
+ksize = (21, 21)
+sigmax = 0
+img_left_edges = cv.Canny(img_left, t1, t2)
+img_left_edges[frame_thickness, :] = 255
+img_left_edges[:, frame_thickness] = 255
+img_left_edges[-frame_thickness - 1, :] = 255
+img_left_edges[:, -frame_thickness - 1] = 255
+img_left_edges = cv.GaussianBlur(img_left_edges, ksize, sigmax)
+img_left_edges[img_left_edges > 0] = 255
+cv.imshow("left", img_left_edges)
+img_left_edges = img_left_edges > 0
+
+img_right_edges = cv.Canny(img_right, t1, t2)
+img_right_edges[frame_thickness, :] = 255
+img_right_edges[:, frame_thickness] = 255
+img_right_edges[-frame_thickness - 1, :] = 255
+img_right_edges[:, -frame_thickness - 1] = 255
+img_right_edges = cv.GaussianBlur(img_right_edges, ksize, sigmax)
+img_right_edges[img_right_edges > 0] = 255
+cv.imshow("right", img_right_edges)
+img_right_edges = img_right_edges > 0
+
+
 # Vectorized SSD computation
 for y in range(0, img_height - frame_thickness * 2):
     # Calculate SSDs for the whole row in the right image at once
-    left_kernels = left_pixel_kernel_matrix[y]
+    left_kernels = left_pixel_kernel_matrix[
+        y, img_left_edges[y, frame_thickness:-frame_thickness]
+    ]
     # print(left_kernels.shape)
     # NCC for each pixel's kernel against all kernels in the same row of the right image
-    ncc = calculate_NCC(left_kernels[:, np.newaxis], right_pixel_kernel_matrix[y, :])
+    ncc = calculate_SSD(
+        left_kernels[:, np.newaxis],
+        right_pixel_kernel_matrix[
+            y, img_right_edges[y, frame_thickness:-frame_thickness]
+        ],
+    )
     # print(NCC)
     # Find the best matching pixel for each pixel in the left image
-    best_matching_pixel_xcoord = np.argmax(ncc, axis=1)
+    best_matching_pixel_xcoord = np.argmin(ncc, axis=1)
+    temp = np.arange(frame_thickness, img_width - frame_thickness)
+    counter = 0
+    inds = [
+        i + frame_thickness
+        for (i, val) in enumerate(img_right_edges[y, frame_thickness:-frame_thickness])
+        if val == 1
+    ]
+    for i, v in enumerate(img_left_edges[y, frame_thickness:-frame_thickness]):
+        if v:
+            temp[i] = inds[best_matching_pixel_xcoord[counter]]
+            counter += 1
+    best_matching_pixel_xcoord = temp
     # print(np.abs(best_matching_pixel_xcoord - np.arange(frame_thickness, img_width - frame_thickness)))
     disparity_map[
         y + frame_thickness, frame_thickness : img_width - frame_thickness
@@ -121,12 +172,14 @@ cv.resizeWindow("disp", 600, 600)
 
 cv.createTrackbar("threshold", "disp", 0, 255, nothing)
 cv.createTrackbar("blur size", "disp", 1, 20, nothing)
+cv.createTrackbar("gradients", "disp", 0, 1, nothing)
 
 while True:
     # Updating the parameters based on the trackbar positions
 
     threshold = cv.getTrackbarPos("threshold", "disp")
     blur_size = cv.getTrackbarPos("blur size", "disp") * 2 - 1
+    gradients = cv.getTrackbarPos("gradients", "disp")
 
     # Calculating stuff
     disparity_map_gui = copy.deepcopy(disparity_map)
@@ -136,6 +189,23 @@ while True:
         for j in range(2, img_width - 2):
             if disparity_map[i, j] > threshold:
                 disparity_map_gui[i, j] = 0
+
+    # Add Gradients
+    if gradients:
+        for y in range(disparity_map_gui.shape[0]):
+            last_edge_index = 0
+            last_edge_value = disparity_map_gui[y, 0]
+            for x in range(disparity_map_gui.shape[1]):
+                if img_left_edges[y, x]:
+                    value_difference = disparity_map_gui[y, x] - last_edge_value
+                    linsp = np.linspace(
+                        last_edge_value,
+                        disparity_map_gui[y, x],
+                        num=x - last_edge_index + 1,
+                    )
+                    last_edge_value = disparity_map_gui[y, x]
+                    disparity_map_gui[y, last_edge_index : x + 1] = linsp
+                    last_edge_index = x
 
     # Normalize and add blur
     disparity_map_scaled = cv.normalize(
