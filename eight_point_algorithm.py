@@ -170,3 +170,6 @@ def run_camera_calibration(debug=True):
         fundamental_matrix,
         essential_matrix,
     )
+
+
+# run_camera_calibration(debug=True)

@@ -9,7 +9,7 @@ matplotlib.use("TKAgg")
 from image_rectificationV2 import run_rectification
 
 # Import images into CV
-identifier = "us"
+identifier = "classroom"
 img_left = cv.imread(identifier + "left.jpg")
 img_right = cv.imread(identifier + "right.jpg")
 img_left = cv.resize(img_left, (0, 0), fx=0.25, fy=0.25)
