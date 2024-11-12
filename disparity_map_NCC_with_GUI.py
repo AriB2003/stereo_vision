@@ -276,9 +276,9 @@ def calculate_pixel_coord(d, d_prime, focal_length, btwn_cameras):
         x: x coordinate in plane
         y: y coordinate in plane
     """
-    theta_1 = math.pi / 2 - np.atan2(np.abs(d), focal_length) * np.sign(d)
+    theta_1 = math.pi / 2 - math.atan2(np.abs(d), focal_length) * np.sign(d)
     # print(theta_1)
-    theta_2 = math.pi / 2 + np.atan2(np.abs(d_prime), focal_length) * np.sign(d_prime)
+    theta_2 = math.pi / 2 + math.atan2(np.abs(d_prime), focal_length) * np.sign(d_prime)
     # print(theta_2)
     try:
         x = float(
@@ -316,34 +316,42 @@ def transform_to_base_frame(x_prime, y_prime, f, d):
 f = 250  # focal length in pixels
 btwn_cameras = 12
 
+
 def calculate_depth_maps(processed_disparity_map, focal_length, btwn_cameras):
 
     f = focal_length
     img_height, img_width = processed_disparity_map.shape
-    horiz_pixel_linspace = np.linspace(-(img_width-1)/2, (img_width-1)/2, img_width)
-    vert_pixel_linspace = np.linspace(-(img_height-1)/2, (img_height-1)/2, img_height)
+    horiz_pixel_linspace = np.linspace(
+        -(img_width - 1) / 2, (img_width - 1) / 2, img_width
+    )
+    vert_pixel_linspace = np.linspace(
+        -(img_height - 1) / 2, (img_height - 1) / 2, img_height
+    )
 
-    depth_map_3D = np.zeros((img_height*img_width,3))
+    depth_map_3D = np.zeros((img_height * img_width, 3))
     depth_map_2D = np.zeros((img_height, img_width))
 
     for i in range(img_height):
         for j in range(img_width):
             horiz_d = horiz_pixel_linspace[j]
-            horiz_d_prime = horiz_pixel_linspace[j] - processed_disparity_map[i,j]
-            x_prime, y_prime = calculate_pixel_coord(horiz_d, horiz_d_prime, f, btwn_cameras)
+            horiz_d_prime = horiz_pixel_linspace[j] - processed_disparity_map[i, j]
+            x_prime, y_prime = calculate_pixel_coord(
+                horiz_d, horiz_d_prime, f, btwn_cameras
+            )
             vert_d = vert_pixel_linspace[i]
             try:
                 x, y, z = transform_to_base_frame(x_prime, y_prime, f, vert_d)
-                if 50 < np.abs(y) < 1000:               
-                    depth_map_3D[img_width*i + j, :] = [x,y,z]
-                    depth_map_2D[i,j] = y
+                if 50 < np.abs(y) < 1000:
+                    depth_map_3D[img_width * i + j, :] = [x, y, z]
+                    depth_map_2D[i, j] = y
             except TypeError:
                 pass
 
     return depth_map_2D, depth_map_3D
 
+
 def plot_depth_map_2D(depth_map_2D):
-    
+
     # # Cut off the left end of the depth map
     # processed_2D_depth = depth_map_2D[:,22:]
     processed_2D_depth = copy.deepcopy(depth_map_2D)
@@ -352,9 +360,8 @@ def plot_depth_map_2D(depth_map_2D):
     # threshold = 500
     # processed_2D_depth[processed_2D_depth > threshold] = 0
     processed_2D_depth = cv.normalize(processed_2D_depth, None, 0, 255, cv.NORM_MINMAX)
-    processed_2D_depth = cv.GaussianBlur(processed_2D_depth, (5,5), 2)
+    processed_2D_depth = cv.GaussianBlur(processed_2D_depth, (5, 5), 2)
 
- 
     fig = plt.figure()
     ax = fig.add_subplot()
     ax.imshow(processed_2D_depth, cmap="gray")
@@ -363,12 +370,17 @@ def plot_depth_map_2D(depth_map_2D):
         if event.inaxes == ax:  # Check if the mouse is within the axis
             # Get the x and y pixel coordinates
             x, y = int(event.xdata), int(event.ydata)
-            
+
             # Check if the coordinates are within the bounds of the image
-            if x >= 0 and y >= 0 and x < depth_map_2D.shape[1] and y < depth_map_2D.shape[0]:
+            if (
+                x >= 0
+                and y >= 0
+                and x < depth_map_2D.shape[1]
+                and y < depth_map_2D.shape[0]
+            ):
                 # Get the pixel value at the current position
                 pixel_value = depth_map_2D[y, x]
-                
+
                 # Display the pixel value on the plot
                 ax.set_title(f"Pixel value at ({x}, {y}): {pixel_value}")
                 fig.canvas.draw_idle()  # Update the plot immediately
@@ -382,20 +394,20 @@ def plot_depth_map_2D(depth_map_2D):
 def plot_depth_map_3D(depth_map_3D):
     # Create the figure
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    ax = fig.add_subplot(111, projection="3d")
 
     # Apply the function to the matrix
     depth_map_3D = remove_zero_rows(depth_map_3D)
 
     # Generate the values
-    x_vals = depth_map_3D[::5, 0:1] # Only using every 5th data point to reduce lag
+    x_vals = depth_map_3D[::5, 0:1]  # Only using every 5th data point to reduce lag
     y_vals = depth_map_3D[::5, 1:2]
     z_vals = depth_map_3D[::5, 2:3]
     # Plot the values
-    ax.scatter(x_vals, y_vals, z_vals, c = 'b', marker='o')
-    ax.set_xlabel('X-axis')
-    ax.set_ylabel('Y-axis')
-    ax.set_zlabel('Z-axis')
+    ax.scatter(x_vals, y_vals, z_vals, c="b", marker="o")
+    ax.set_xlabel("X-axis")
+    ax.set_ylabel("Y-axis")
+    ax.set_zlabel("Z-axis")
 
     plt.show()
 
