@@ -172,4 +172,5 @@ def run_camera_calibration(debug=True):
     )
 
 
-# run_camera_calibration(debug=True)
+if __name__ == "__main__":
+    run_camera_calibration(debug=True)
