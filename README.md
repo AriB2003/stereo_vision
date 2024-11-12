@@ -1,21 +1,5 @@
 # stereo_vision
 
-
-<p style="color: red; font-weight: bold">>>>>>  gd2md-html alert:  ERRORs: 0; WARNINGs: 1; ALERTS: 8.</p>
-<ul style="color: red; font-weight: bold"><li>See top comment block for details on ERRORs and WARNINGs. <li>In the converted Markdown or HTML, search for inline alerts that start with >>>>>  gd2md-html alert:  for specific instances that need correction.</ul>
-
-<p style="color: red; font-weight: bold">Links to alert messages:</p><a href="#gdcalert1">alert1</a>
-<a href="#gdcalert2">alert2</a>
-<a href="#gdcalert3">alert3</a>
-<a href="#gdcalert4">alert4</a>
-<a href="#gdcalert5">alert5</a>
-<a href="#gdcalert6">alert6</a>
-<a href="#gdcalert7">alert7</a>
-<a href="#gdcalert8">alert8</a>
-
-<p style="color: red; font-weight: bold">>>>>> PLEASE check and correct alert issues and delete this message and the inline alerts.<hr></p>
-
-
 **What was the goal of your project?**
 
 This project aimed to implement a stereo vision disparity map pipeline in Python using the OpenCV framework while computing most of the fundamental algorithms by hand. This included:
@@ -51,25 +35,13 @@ The eight-point algorithm is one of the algorithms for estimating the fundamenta
 
 As implied by the name, the eight-point algorithm requires eight corresponding points across the two images. These were obtained from the chessboard calibration target for simplicity. Unlike the similar five-point and seven-point estimations, the eight-point algorithm can define the fundamental matrix up to a scalar, which simplifies the process and eliminates the possibility of estimation uncertainty. The fundamental matrix is defined by the following:
 
-
-
-<p id="gdcalert1" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image1.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert2">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
-
-
 ![alt_text](images/image1.jpg "image_tooltip")
-
 
 This equation can be solved for the eight points and eight values in the fundamental matrix directly. The ninth value F<sub>3,3</sub> is conventionally set to 1 in order to lock the scale of the matrix.
 
 While the fundamental matrix can be defined from a single set of images, the essential matrix should not. The essential matrix is defined as:
 
-
-
-<p id="gdcalert2" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image2.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert3">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
-
-
 ![alt_text](images/image2.jpg "image_tooltip")
-
 
 The essential matrix takes into account the distortions in the image using the intrinsic matrices K. OpenCV allows for the computation of the intrinsic matrix of a camera using built-in functions, however, for the purposes of calibrating the tangential and radial distortion, it is important to average a variety of different calibration poses in different corners of the image, at different angles, and at different distances. We decided to use eight images per camera, which in hindsight, is likely on the lower bound of acceptable calibration error. 
 
@@ -79,11 +51,7 @@ Image rectification parallelizes** **the epipolar lines of the two images making
 
 Our image rectification code starts by decomposing the essential matrix as well as the rotation matrix received from the eight point algorithm. The information stored in this matrix tells the program where the cameras are in relation to each other. We wanted to use epipolar geometry to calculate the relationship between both images and compute the homographies that will be applied to the images to align them on the same plane. The common plane needed a new coordinate system we had to define. The x-axis (r1) for the new orthonormal bases was defined as the vector between the centers of both images. Based on this the y axis (r2) could be calculated to be the cross product of the x axis (r1) and the “world x axis” [0,0,1]. The z-axis (r3) was then defined as the cross product between the x axis (r1) and the y axis (r2) This coordinate system could then be stacked into a rotation matrix which would rotate the coordinate of the image to align with it. This could then be used to compute the homographies for each photo by taking the intrinsic matrix of the camera and normalizing the camera coordinates by multiplying it by the inverse of the transformations that map 3D world points into the original camera views. It was then multiplied by the rectification matrix to apply the new coordinate system which results in that photo’s homography. Reference the equation below. 
 
-
-
-<p id="gdcalert3" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: equation: use MathJax/LaTeX if your publishing platform supports it. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert4">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
-
-
+![alt_text](images/image3.jpg "image_tooltip")
 
 From here the homographies are applied to the initial images to rectify them and they are then ready to be used to calculate the disparity map. 
 
@@ -95,13 +63,7 @@ We made a couple modifications to this algorithm to help improve our results on 
 
 Once we have calculated our disparity map, we can then use the left and right pixel values to calculate our depth map. A visual demonstration of how this works is shown below.
 
-
-
-<p id="gdcalert4" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image3.jpg). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert5">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
-
-
-![alt_text](images/image3.jpg "image_tooltip")
-
+![alt_text](images/image4.jpg "image_tooltip")
 
 In the image above, *P<sub>1</sub> *and *P<sub>2</sub>* represent the pixels from the left and right image, respectively, that have been determined to be of the same object. The variable *f* represents the focal length of the camera (in pixels), and *I<sub>1</sub> *and* I<sub>2</sub> *represent the image planes of the left and right image, with their width (in pixels) determined by the resolution of the image.
 
@@ -109,13 +71,7 @@ As we can see, the lines from the focal point of each camera through *P<sub>1</s
 
 We then have one final step. So far, we have been looking at this problem in 2D, but with a real camera, we must also account for the vertical position of our pixel and its deviation from the focal point of the camera. A visualization of this is shown below.
 
-
-
-<p id="gdcalert5" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image4.jpg). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert6">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
-
-
 ![alt_text](images/image4.jpg "image_tooltip")
-
 
 This problem is very similar to the problem we just had, except much simpler because we already know the position of O<sub>1</sub> within its epipolar plane. In order to figure out how to transform it into 3D space, we must simply calculate Θ<sub>z</sub> with the same methodology we used previously, and then perform a basic coordinate transform to find the true x, y, and z coordinates of the object.
 
@@ -125,30 +81,13 @@ Eight-Point Algorithm:
 
 In implementing the eight-point algorithm, we decided to vectorize the approach. This required taking an interesting perspective to the linear system for solving the fundamental matrix. By first processing the multiplication of the point vectors, the result could be unrolled to form a row of an 8x8 matrix, excluding the final 1 caused by the point homogeneity. We will call this matrix A.
 
-
-
-<p id="gdcalert6" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image5.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert7">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
-
-
 ![alt_text](images/image5.jpg "image_tooltip")
-
 
 By unrolling the fundamental matrix, the following 8x1 vector can be formed, excluding F<sub>3,3</sub> in order to not over define the system. We will call this vector x.
 
-
-
-<p id="gdcalert7" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image6.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert8">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
-
-
 ![alt_text](images/image6.jpg "image_tooltip")
 
-
 Finally, we will set the solution to the system of equations to be a vector of size 8x1 filled with -1, which we will call b. This final equation can be solved for the fundamental matrix in a vectorized manner.
-
-
-
-<p id="gdcalert8" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image7.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert9">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
-
 
 ![alt_text](images/image7.jpg "image_tooltip")
 
