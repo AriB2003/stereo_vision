@@ -56,7 +56,7 @@ As implied by the name, the eight-point algorithm requires eight corresponding p
 <p id="gdcalert1" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image1.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert2">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
 
 
-![alt_text](images/image1.png "image_tooltip")
+![alt_text](images/image1.jpg "image_tooltip")
 
 
 This equation can be solved for the eight points and eight values in the fundamental matrix directly. The ninth value F<sub>3,3</sub> is conventionally set to 1 in order to lock the scale of the matrix.
@@ -68,7 +68,7 @@ While the fundamental matrix can be defined from a single set of images, the ess
 <p id="gdcalert2" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image2.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert3">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
 
 
-![alt_text](images/image2.png "image_tooltip")
+![alt_text](images/image2.jpg "image_tooltip")
 
 
 The essential matrix takes into account the distortions in the image using the intrinsic matrices K. OpenCV allows for the computation of the intrinsic matrix of a camera using built-in functions, however, for the purposes of calibrating the tangential and radial distortion, it is important to average a variety of different calibration poses in different corners of the image, at different angles, and at different distances. We decided to use eight images per camera, which in hindsight, is likely on the lower bound of acceptable calibration error. 
@@ -130,7 +130,7 @@ In implementing the eight-point algorithm, we decided to vectorize the approach.
 <p id="gdcalert6" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image5.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert7">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
 
 
-![alt_text](images/image5.png "image_tooltip")
+![alt_text](images/image5.jpg "image_tooltip")
 
 
 By unrolling the fundamental matrix, the following 8x1 vector can be formed, excluding F<sub>3,3</sub> in order to not over define the system. We will call this vector x.
@@ -140,7 +140,7 @@ By unrolling the fundamental matrix, the following 8x1 vector can be formed, exc
 <p id="gdcalert7" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image6.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert8">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
 
 
-![alt_text](images/image6.png "image_tooltip")
+![alt_text](images/image6.jpg "image_tooltip")
 
 
 Finally, we will set the solution to the system of equations to be a vector of size 8x1 filled with -1, which we will call b. This final equation can be solved for the fundamental matrix in a vectorized manner.
@@ -150,7 +150,7 @@ Finally, we will set the solution to the system of equations to be a vector of s
 <p id="gdcalert8" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image7.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert9">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
 
 
-![alt_text](images/image7.png "image_tooltip")
+![alt_text](images/image7.jpg "image_tooltip")
 
 
 Image Rectification: 
