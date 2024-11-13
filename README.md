@@ -71,7 +71,7 @@ As we can see, the lines from the focal point of each camera through *P<sub>1</s
 
 We then have one final step. So far, we have been looking at this problem in 2D, but with a real camera, we must also account for the vertical position of our pixel and its deviation from the focal point of the camera. A visualization of this is shown below.
 
-![alt_text](images/image4.jpg "image_tooltip")
+![alt_text](images/image5.jpg "image_tooltip")
 
 This problem is very similar to the problem we just had, except much simpler because we already know the position of O<sub>1</sub> within its epipolar plane. In order to figure out how to transform it into 3D space, we must simply calculate Θ<sub>z</sub> with the same methodology we used previously, and then perform a basic coordinate transform to find the true x, y, and z coordinates of the object.
 
@@ -81,15 +81,15 @@ Eight-Point Algorithm:
 
 In implementing the eight-point algorithm, we decided to vectorize the approach. This required taking an interesting perspective to the linear system for solving the fundamental matrix. By first processing the multiplication of the point vectors, the result could be unrolled to form a row of an 8x8 matrix, excluding the final 1 caused by the point homogeneity. We will call this matrix A.
 
-![alt_text](images/image5.jpg "image_tooltip")
+![alt_text](images/image6.jpg "image_tooltip")
 
 By unrolling the fundamental matrix, the following 8x1 vector can be formed, excluding F<sub>3,3</sub> in order to not over define the system. We will call this vector x.
 
-![alt_text](images/image6.jpg "image_tooltip")
+![alt_text](images/image7.jpg "image_tooltip")
 
 Finally, we will set the solution to the system of equations to be a vector of size 8x1 filled with -1, which we will call b. This final equation can be solved for the fundamental matrix in a vectorized manner.
 
-![alt_text](images/image7.jpg "image_tooltip")
+![alt_text](images/image8.jpg "image_tooltip")
 
 
 Image Rectification: 
